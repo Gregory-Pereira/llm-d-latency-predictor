@@ -13,11 +13,11 @@ patches:
 
 images:
   - name: placeholder-for-training-server-image
-    newName: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/latency-training-server
+    newName: ghcr.io/llm-d/llm-d-latency-predictor-training-server
     newTag: latest
   - name: placeholder-for-prediction-server-image
-    newName: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/latency-prediction-server
+    newName: ghcr.io/llm-d/llm-d-latency-predictor-prediction-server
     newTag: latest
   - name: placeholder-for-test-image
-    newName: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/latency-prediction-test
+    newName: ghcr.io/llm-d/llm-d-latency-predictor-test
     newTag: latest
