@@ -144,9 +144,7 @@ jobs:
 
       - name: Export image ref
         id: image-ref
-        run: |
-          first_tag=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
-          echo "ref=${first_tag}" >> "$GITHUB_OUTPUT"
+        run: echo "ref=${{ env.IMAGE_BASE }}-prediction-server${{ inputs.image_suffix }}:commit-${{ steps.sha.outputs.short }}" >> "$GITHUB_OUTPUT"
 
   build-training:
     needs: detect-changes
@@ -205,9 +203,7 @@ jobs:
 
       - name: Export image ref
         id: image-ref
-        run: |
-          first_tag=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
-          echo "ref=${first_tag}" >> "$GITHUB_OUTPUT"
+        run: echo "ref=${{ env.IMAGE_BASE }}-training-server${{ inputs.image_suffix }}:commit-${{ steps.sha.outputs.short }}" >> "$GITHUB_OUTPUT"
 
   build-test:
     needs: detect-changes
@@ -266,6 +262,4 @@ jobs:
 
       - name: Export image ref
         id: image-ref
-        run: |
-          first_tag=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
-          echo "ref=${first_tag}" >> "$GITHUB_OUTPUT"
+        run: echo "ref=${{ env.IMAGE_BASE }}-test${{ inputs.image_suffix }}:commit-${{ steps.sha.outputs.short }}" >> "$GITHUB_OUTPUT"
