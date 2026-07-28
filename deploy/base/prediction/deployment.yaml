@@ -18,8 +18,6 @@ spec:
         app: prediction-server
         component: prediction
     spec:
-      nodeSelector:
-        cloud.google.com/gke-nodepool: "pool-2"
       containers:
         - name: prediction-server
           image: placeholder-for-prediction-server-image:latest  # TODO Replace with actual image

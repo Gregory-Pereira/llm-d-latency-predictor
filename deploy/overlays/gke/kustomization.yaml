@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - storageclass.yaml
+
+patches:
+  - path: node-selector-patch.yaml
+  - path: pvc-patch.yaml
+  # Uncomment when the test Job is enabled in the base kustomization
+  # - path: test-node-selector-patch.yaml
+
+images:
+  - name: placeholder-for-training-server-image
+    newName: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/latency-training-server
+    newTag: latest
+  - name: placeholder-for-prediction-server-image
+    newName: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/latency-prediction-server
+    newTag: latest
+  - name: placeholder-for-test-image
+    newName: us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/latency-prediction-test
+    newTag: latest

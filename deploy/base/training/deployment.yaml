@@ -18,8 +18,6 @@ spec:
         app: training-server
         component: training
     spec:
-      nodeSelector:
-        cloud.google.com/gke-nodepool: "pool-2"
       containers:
         - name: training-server
           image: placeholder-for-training-server-image:latest  # TODO Replace with actual image
