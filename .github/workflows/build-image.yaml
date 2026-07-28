@@ -123,8 +123,7 @@ jobs:
           images: ${{ env.IMAGE_BASE }}-prediction-server${{ inputs.image_suffix }}
           tags: |
             type=ref,event=pr
-            type=raw,value=sha-${{ steps.sha.outputs.short }},enable=${{ github.event_name == 'pull_request' }}
-            type=raw,value=commit-${{ steps.sha.outputs.short }},enable={{is_default_branch}}
+            type=raw,value=commit-${{ steps.sha.outputs.short }}
             type=raw,value=main,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -185,8 +184,7 @@ jobs:
           images: ${{ env.IMAGE_BASE }}-training-server${{ inputs.image_suffix }}
           tags: |
             type=ref,event=pr
-            type=raw,value=sha-${{ steps.sha.outputs.short }},enable=${{ github.event_name == 'pull_request' }}
-            type=raw,value=commit-${{ steps.sha.outputs.short }},enable={{is_default_branch}}
+            type=raw,value=commit-${{ steps.sha.outputs.short }}
             type=raw,value=main,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -247,8 +245,7 @@ jobs:
           images: ${{ env.IMAGE_BASE }}-test${{ inputs.image_suffix }}
           tags: |
             type=ref,event=pr
-            type=raw,value=sha-${{ steps.sha.outputs.short }},enable=${{ github.event_name == 'pull_request' }}
-            type=raw,value=commit-${{ steps.sha.outputs.short }},enable={{is_default_branch}}
+            type=raw,value=commit-${{ steps.sha.outputs.short }}
             type=raw,value=main,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
