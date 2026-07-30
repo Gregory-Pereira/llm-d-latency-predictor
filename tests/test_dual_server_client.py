@@ -2125,7 +2125,7 @@ if __name__ == "__main__":
         ("Flush API", test_training_server_flush_api),
         ("Flush Error Handling", test_training_server_flush_error_handling),
         ("Model Export", test_model_export),
-        ("Dual Server Model Learns Equation", test_dual_server_quantile_regression_learns_distribution),
+        ("Dual Server Model Learns Equation", test_dual_server_quantile_regression_learns_distribution_stress),
         ("End-to-End Workflow", test_end_to_end_workflow),
     ]
 
