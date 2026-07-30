@@ -1,0 +1,83 @@
+name: CI - PR Build
+
+# pull_request_target runs with the base repo's token, which has packages:write
+# access to ghcr.io/llm-d/*. This is required for fork PRs to push images.
+#
+# Security gate: builds only proceed if the PR author is an llm-d org member
+# OR a maintainer has added the 'ok-to-build' label. This prevents untrusted
+# code from running with the base repo's credentials.
+on:
+  pull_request_target:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  authorize:
+    runs-on: ubuntu-latest
+    outputs:
+      allowed: ${{ steps.check.outputs.allowed }}
+    steps:
+      - name: Check if build is authorized
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Allow if the PR has the 'ok-to-build' label
+          has_label=$(echo '${{ toJSON(github.event.pull_request.labels.*.name) }}' | jq 'any(. == "ok-to-build")')
+          if [ "$has_label" = "true" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+            echo "Authorized: 'ok-to-build' label present"
+            exit 0
+          fi
+
+          # Allow if the PR author is a member of the llm-d org
+          author="${{ github.event.pull_request.user.login }}"
+          status=$(gh api "orgs/llm-d/members/$author" --silent 2>&1 && echo "member" || echo "not-member")
+          if [ "$status" = "member" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+            echo "Authorized: $author is an llm-d org member"
+            exit 0
+          fi
+
+          echo "allowed=false" >> "$GITHUB_OUTPUT"
+          echo "Not authorized: $author is not an llm-d org member and PR lacks 'ok-to-build' label"
+
+  check-code-changes:
+    needs: authorize
+    if: needs.authorize.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      has_code_changes: ${{ steps.filter.outputs.code }}
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Check for code changes
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            code:
+              - '!docs/**'
+              - '!**/*.md'
+              - '!LICENSE'
+              - '!OWNERS'
+
+  container-build:
+    needs: check-code-changes
+    if: needs.check-code-changes.outputs.has_code_changes == 'true'
+    uses: ./.github/workflows/build-image.yaml
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+      image_suffix: "-dev"
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
