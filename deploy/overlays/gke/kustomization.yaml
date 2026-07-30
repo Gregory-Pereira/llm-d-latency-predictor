@@ -1,23 +1,14 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+namespace: default
+
 resources:
-  - ../../base
-  - storageclass.yaml
+  - training
+  - prediction
+  # Uncomment to include the test job
+  # - test
 
-patches:
-  - path: node-selector-patch.yaml
-  - path: pvc-patch.yaml
-  # Uncomment when the test Job is enabled in the base kustomization
-  # - path: test-node-selector-patch.yaml
-
-images:
-  - name: placeholder-for-training-server-image
-    newName: ghcr.io/llm-d/llm-d-latency-predictor-training-server
-    newTag: latest
-  - name: placeholder-for-prediction-server-image
-    newName: ghcr.io/llm-d/llm-d-latency-predictor-prediction-server
-    newTag: latest
-  - name: placeholder-for-test-image
-    newName: ghcr.io/llm-d/llm-d-latency-predictor-test
-    newTag: latest
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: latency-predictor
