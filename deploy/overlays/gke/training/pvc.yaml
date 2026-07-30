@@ -4,3 +4,8 @@ metadata:
   name: training-models-pvc
 spec:
   storageClassName: hyperdisk-balanced-sc
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi

@@ -6,6 +6,8 @@ resources:
 
 patches:
   - path: node-selector-patch.yaml
+  - path: service-patch.yaml
+  - path: replicas-patch.yaml
 
 images:
   - name: placeholder-for-prediction-server-image

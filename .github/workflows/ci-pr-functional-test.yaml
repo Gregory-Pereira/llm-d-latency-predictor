@@ -136,22 +136,22 @@ jobs:
           echo "Waiting for prediction server..."
           kubectl rollout status deployment/prediction-server-deployment --timeout=120s
 
-      - name: Wait for test job to complete
+      - name: Wait for functional test job to complete
         run: |
-          echo "Waiting for test job to complete (timeout: 10m)..."
-          kubectl wait --for=condition=complete job/latency-predictor-test --timeout=600s || {
-            echo "::error::Test job did not complete successfully"
+          echo "Waiting for functional test job to complete (timeout: 10m)..."
+          kubectl wait --for=condition=complete job/latency-predictor-functional-test --timeout=600s || {
+            echo "::error::Functional test job did not complete successfully"
             echo "--- Test pod logs ---"
-            kubectl logs -l component=test --tail=200
+            kubectl logs -l component=functional-test --tail=200
             exit 1
           }
 
       - name: Collect test results
         if: always()
         run: |
-          echo "## Test Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Functional Test Results" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          kubectl logs -l component=test --tail=500 >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+          kubectl logs -l component=functional-test --tail=500 >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Show logs on failure
@@ -161,8 +161,8 @@ jobs:
           kubectl logs -l component=training --tail=100
           echo "=== Prediction server logs ==="
           kubectl logs -l component=prediction --tail=100
-          echo "=== Test pod logs ==="
-          kubectl logs -l component=test --tail=200
+          echo "=== Functional test pod logs ==="
+          kubectl logs -l component=functional-test --tail=200
           echo "=== Pod status ==="
           kubectl get pods -o wide
           echo "=== Events ==="
