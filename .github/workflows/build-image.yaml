@@ -75,18 +75,19 @@ jobs:
               - 'common/**'
               - 'pyproject.toml'
               - 'requirements.txt'
+              - 'VERSION'
             training:
               - 'training/**'
               - 'common/**'
               - 'pyproject.toml'
               - 'requirements.txt'
+              - 'VERSION'
             test:
               - 'tests/**'
-              - 'prediction/**'
-              - 'training/**'
               - 'common/**'
               - 'pyproject.toml'
               - 'requirements.txt'
+              - 'VERSION'
 
   build-prediction:
     needs: detect-changes

@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: training-server
-          image: placeholder-for-training-server-image:latest  # TODO Replace with actual image
+          image: placeholder-for-training-server-image
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

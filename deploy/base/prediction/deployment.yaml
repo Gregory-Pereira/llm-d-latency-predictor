@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: prediction-server
-          image: placeholder-for-prediction-server-image:latest  # TODO Replace with actual image
+          image: placeholder-for-prediction-server-image
           imagePullPolicy: Always
           ports:
             - containerPort: 8001
