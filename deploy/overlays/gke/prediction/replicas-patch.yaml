@@ -1,6 +1,0 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: prediction-server-deployment
-spec:
-  replicas: 10
