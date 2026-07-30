@@ -44,12 +44,13 @@ jobs:
           echo "allowed=false" >> "$GITHUB_OUTPUT"
           echo "Not authorized: $author is not an llm-d org member and PR lacks 'ok-to-build' label"
 
-  check-code-changes:
+  check-changes:
     needs: authorize
     if: needs.authorize.outputs.allowed == 'true'
     runs-on: ubuntu-latest
     outputs:
-      has_code_changes: ${{ steps.filter.outputs.code }}
+      needs_build: ${{ steps.filter.outputs.code }}
+      needs_test: ${{ steps.filter.outputs.code == 'true' || steps.filter.outputs.deploy == 'true' }}
     steps:
       - name: Checkout PR head
         uses: actions/checkout@v6
@@ -57,20 +58,26 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           allow-unsafe-pr-checkout: true
 
-      - name: Check for code changes
+      - name: Detect changes
         uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
             code:
-              - '!docs/**'
-              - '!**/*.md'
-              - '!LICENSE'
-              - '!OWNERS'
+              - 'prediction/**'
+              - 'training/**'
+              - 'tests/**'
+              - 'common/**'
+              - 'pyproject.toml'
+              - 'requirements.txt'
+              - 'VERSION'
+              - 'VERSION'
+            deploy:
+              - 'deploy/**'
 
   build-images:
-    needs: check-code-changes
-    if: needs.check-code-changes.outputs.has_code_changes == 'true'
+    needs: check-changes
+    if: needs.check-changes.outputs.needs_build == 'true'
     uses: ./.github/workflows/build-image.yaml
     with:
       ref: ${{ github.event.pull_request.head.sha }}
@@ -81,7 +88,8 @@ jobs:
     secrets: inherit
 
   functional-test:
-    needs: build-images
+    needs: [check-changes, build-images]
+    if: always() && needs.check-changes.outputs.needs_test == 'true' && needs.build-images.result != 'failure'
     runs-on: oracle-vm-24cpu-96gb-x86-64
     steps:
       - name: Checkout PR head

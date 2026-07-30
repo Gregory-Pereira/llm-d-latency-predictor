@@ -11,4 +11,4 @@ patches:
 images:
   - name: placeholder-for-prediction-server-image
     newName: ghcr.io/llm-d/llm-d-latency-predictor-prediction-server
-    newTag: latest
+    newTag: main
