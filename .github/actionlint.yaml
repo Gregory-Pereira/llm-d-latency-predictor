@@ -1,0 +1,5 @@
+self-hosted-runner:
+  labels:
+    - oracle-vm-24cpu-96gb-x86-64
+    - cncf-ubuntu-4-16-x86
+    - cncf-ubuntu-8-32-x86

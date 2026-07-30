@@ -8,7 +8,7 @@ on:
 jobs:
   # Detect if PR contains code changes (skip expensive checks for docs-only PRs)
   check-code-changes:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-4-16-x86
     permissions:
       contents: read
     outputs:
@@ -30,7 +30,7 @@ jobs:
 
   # Lint: runs all pre-commit hooks (ruff, shellcheck, hadolint, markdownlint, yamllint, etc.)
   lint:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-4-16-x86
     steps:
       - name: Checkout source
         uses: actions/checkout@v6
@@ -45,7 +45,7 @@ jobs:
 
   # Require VERSION bump when code changes
   version-check:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-4-16-x86
     needs: check-code-changes
     if: needs.check-code-changes.outputs.has_code_changes == 'true'
     steps:
@@ -92,7 +92,7 @@ jobs:
 
   # Verify the restructured layout is importable
   import-check:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-4-16-x86
     needs: check-code-changes
     if: needs.check-code-changes.outputs.has_code_changes == 'true'
     steps:

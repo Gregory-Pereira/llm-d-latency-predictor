@@ -46,7 +46,7 @@ concurrency:
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-4-16-x86
     outputs:
       prediction: ${{ steps.force.outputs.all || steps.filter.outputs.prediction }}
       training: ${{ steps.force.outputs.all || steps.filter.outputs.training }}
@@ -91,7 +91,7 @@ jobs:
   build-prediction:
     needs: detect-changes
     if: needs.detect-changes.outputs.prediction == 'true'
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-8-32-x86
     outputs:
       image: ${{ steps.image-ref.outputs.ref }}
     steps:
@@ -143,7 +143,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: Export image ref
         id: image-ref
@@ -158,7 +158,7 @@ jobs:
   build-training:
     needs: detect-changes
     if: needs.detect-changes.outputs.training == 'true'
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-8-32-x86
     outputs:
       image: ${{ steps.image-ref.outputs.ref }}
     steps:
@@ -210,7 +210,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: Export image ref
         id: image-ref
@@ -225,7 +225,7 @@ jobs:
   build-test:
     needs: detect-changes
     if: needs.detect-changes.outputs.test == 'true'
-    runs-on: ubuntu-latest
+    runs-on: cncf-ubuntu-8-32-x86
     outputs:
       image: ${{ steps.image-ref.outputs.ref }}
     steps:
@@ -277,7 +277,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
 
       - name: Export image ref
         id: image-ref
