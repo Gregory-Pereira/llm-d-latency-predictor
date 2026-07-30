@@ -1226,7 +1226,7 @@ def generate_random_training_payload():
     }
 
 
-def test_dual_server_quantile_regression_learns_distribution():
+def test_dual_server_quantile_regression_learns_distribution_stress():
     """
     Quantile regression should learn the q-quantile of a Gaussian residual model
     with fixed sigma, verified by (a) relative error vs μ+zσ and (b) empirical coverage.
@@ -1422,7 +1422,7 @@ def _reload_prediction_server(max_attempts: int = 15) -> bool:
     return False
 
 
-def test_tif_features_mean_learns_equation():
+def test_tif_features_mean_learns_equation_stress():
     """
     Mean objective: verify the model learns the TIF→latency equation.
 
@@ -1556,7 +1556,7 @@ def test_tif_features_mean_learns_equation():
     print("✓ Mean model learned TIF equation: predictions increase monotonically with TIF")
 
 
-def test_tif_features_quantile_learns_distribution():
+def test_tif_features_quantile_learns_distribution_stress():
     """
     Quantile/percentile objective: verify the model learns the conditional
     distribution of latency given TIF features.
@@ -2125,7 +2125,7 @@ if __name__ == "__main__":
         ("Flush API", test_training_server_flush_api),
         ("Flush Error Handling", test_training_server_flush_error_handling),
         ("Model Export", test_model_export),
-        ("Dual Server Model Learns Equation", test_dual_server_quantile_regression_learns_distribution),
+        ("Dual Server Model Learns Equation", test_dual_server_quantile_regression_learns_distribution_stress),
         ("End-to-End Workflow", test_end_to_end_workflow),
     ]
 

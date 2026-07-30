@@ -4,10 +4,12 @@ kind: Kustomization
 resources:
   - ../../../base/training
   - storageclass.yaml
+  - pvc.yaml
+  - service-external.yaml
 
 patches:
   - path: node-selector-patch.yaml
-  - path: pvc-patch.yaml
+  - path: volume-patch.yaml
 
 images:
   - name: placeholder-for-training-server-image

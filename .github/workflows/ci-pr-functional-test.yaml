@@ -1,0 +1,171 @@
+name: CI - PR Functional Tests
+
+# Runs functional tests against PR images in a Kind cluster.
+# Uses pull_request_target for ghcr.io access (same security model as ci-pr-build).
+on:
+  pull_request_target:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, labeled]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_BASE: ghcr.io/llm-d/llm-d-latency-predictor
+
+jobs:
+  authorize:
+    runs-on: ubuntu-latest
+    outputs:
+      allowed: ${{ steps.check.outputs.allowed }}
+    steps:
+      - name: Check if build is authorized
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          has_label=$(echo '${{ toJSON(github.event.pull_request.labels.*.name) }}' | jq 'any(. == "ok-to-build")')
+          if [ "$has_label" = "true" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+            echo "Authorized: 'ok-to-build' label present"
+            exit 0
+          fi
+
+          author="${{ github.event.pull_request.user.login }}"
+          status=$(gh api "orgs/llm-d/members/$author" --silent 2>&1 && echo "member" || echo "not-member")
+          if [ "$status" = "member" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+            echo "Authorized: $author is an llm-d org member"
+            exit 0
+          fi
+
+          echo "allowed=false" >> "$GITHUB_OUTPUT"
+          echo "Not authorized: $author is not an llm-d org member and PR lacks 'ok-to-build' label"
+
+  check-code-changes:
+    needs: authorize
+    if: needs.authorize.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      has_code_changes: ${{ steps.filter.outputs.code }}
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          allow-unsafe-pr-checkout: true
+
+      - name: Check for code changes
+        uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            code:
+              - '!docs/**'
+              - '!**/*.md'
+              - '!LICENSE'
+              - '!OWNERS'
+
+  build-images:
+    needs: check-code-changes
+    if: needs.check-code-changes.outputs.has_code_changes == 'true'
+    uses: ./.github/workflows/build-image.yaml
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+      image_suffix: "-dev"
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
+
+  functional-test:
+    needs: build-images
+    runs-on: oracle-vm-24cpu-96gb-x86-64
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          allow-unsafe-pr-checkout: true
+
+      - name: Compute short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Create Kind cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: functional-test
+
+      - name: Determine image refs
+        id: images
+        run: |
+          SHORT="${{ steps.sha.outputs.short }}"
+          PR_NUM="${{ github.event.pull_request.number }}"
+          TAG="pr-${PR_NUM}-commit-${SHORT}"
+
+          for service in prediction-server training-server test; do
+            dev_ref="${{ env.IMAGE_BASE }}-${service}-dev:${TAG}"
+            main_ref="${{ env.IMAGE_BASE }}-${service}:main"
+
+            if docker manifest inspect "${dev_ref}" > /dev/null 2>&1; then
+              echo "${service}=${dev_ref}" >> "$GITHUB_OUTPUT"
+              echo "Using dev image for ${service}: ${dev_ref}"
+            else
+              echo "${service}=${main_ref}" >> "$GITHUB_OUTPUT"
+              echo "Using main image for ${service}: ${main_ref}"
+            fi
+          done
+
+      - name: Set images in kustomize overlay
+        working-directory: deploy/overlays/ci
+        run: |
+          kustomize edit set image \
+            "placeholder-for-prediction-server-image=${{ steps.images.outputs.prediction-server }}" \
+            "placeholder-for-training-server-image=${{ steps.images.outputs.training-server }}" \
+            "placeholder-for-test-image=${{ steps.images.outputs.test }}"
+
+      - name: Deploy to Kind
+        run: kubectl apply -k deploy/overlays/ci/
+
+      - name: Wait for servers to be ready
+        run: |
+          echo "Waiting for training server..."
+          kubectl rollout status deployment/training-server-deployment --timeout=120s
+
+          echo "Waiting for prediction server..."
+          kubectl rollout status deployment/prediction-server-deployment --timeout=120s
+
+      - name: Wait for functional test job to complete
+        run: |
+          echo "Waiting for functional test job to complete (timeout: 10m)..."
+          kubectl wait --for=condition=complete job/latency-predictor-functional-test --timeout=600s || {
+            echo "::error::Functional test job did not complete successfully"
+            echo "--- Test pod logs ---"
+            kubectl logs -l component=functional-test --tail=200
+            exit 1
+          }
+
+      - name: Collect test results
+        if: always()
+        run: |
+          echo "## Functional Test Results" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          kubectl logs -l component=functional-test --tail=500 >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "=== Training server logs ==="
+          kubectl logs -l component=training --tail=100
+          echo "=== Prediction server logs ==="
+          kubectl logs -l component=prediction --tail=100
+          echo "=== Functional test pod logs ==="
+          kubectl logs -l component=functional-test --tail=200
+          echo "=== Pod status ==="
+          kubectl get pods -o wide
+          echo "=== Events ==="
+          kubectl get events --sort-by='.lastTimestamp' | tail -30
