@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   authorize:
-    runs-on: cncf-ubuntu-4-16-x86
+    runs-on: ubuntu-latest
     outputs:
       allowed: ${{ steps.check.outputs.allowed }}
     steps:
@@ -50,7 +50,7 @@ jobs:
   check-code-changes:
     needs: authorize
     if: needs.authorize.outputs.allowed == 'true'
-    runs-on: cncf-ubuntu-4-16-x86
+    runs-on: ubuntu-latest
     outputs:
       has_code_changes: ${{ steps.filter.outputs.code }}
     steps:

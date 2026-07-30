@@ -46,7 +46,7 @@ concurrency:
 
 jobs:
   detect-changes:
-    runs-on: cncf-ubuntu-4-16-x86
+    runs-on: ubuntu-latest
     outputs:
       prediction: ${{ steps.force.outputs.all || steps.filter.outputs.prediction }}
       training: ${{ steps.force.outputs.all || steps.filter.outputs.training }}
@@ -91,7 +91,7 @@ jobs:
   build-prediction:
     needs: detect-changes
     if: needs.detect-changes.outputs.prediction == 'true'
-    runs-on: cncf-ubuntu-8-32-x86
+    runs-on: ubuntu-latest-8-cores
     outputs:
       image: ${{ steps.image-ref.outputs.ref }}
     steps:
@@ -158,7 +158,7 @@ jobs:
   build-training:
     needs: detect-changes
     if: needs.detect-changes.outputs.training == 'true'
-    runs-on: cncf-ubuntu-8-32-x86
+    runs-on: ubuntu-latest-8-cores
     outputs:
       image: ${{ steps.image-ref.outputs.ref }}
     steps:
@@ -225,7 +225,7 @@ jobs:
   build-test:
     needs: detect-changes
     if: needs.detect-changes.outputs.test == 'true'
-    runs-on: cncf-ubuntu-8-32-x86
+    runs-on: ubuntu-latest-8-cores
     outputs:
       image: ${{ steps.image-ref.outputs.ref }}
     steps:

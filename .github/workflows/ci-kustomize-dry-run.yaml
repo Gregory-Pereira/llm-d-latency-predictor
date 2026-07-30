@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   kustomize-dry-run:
-    runs-on: cncf-ubuntu-4-16-x86
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
