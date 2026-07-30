@@ -62,6 +62,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || '' }}
+          allow-unsafe-pr-checkout: true
 
       - name: Detect changed paths
         if: inputs.force_build != true
@@ -98,6 +99,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || '' }}
+          allow-unsafe-pr-checkout: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -157,6 +159,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || '' }}
+          allow-unsafe-pr-checkout: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -216,6 +219,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || '' }}
+          allow-unsafe-pr-checkout: true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
