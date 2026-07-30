@@ -125,7 +125,8 @@ jobs:
           images: ${{ env.IMAGE_BASE }}-prediction-server${{ inputs.image_suffix }}
           tags: |
             type=ref,event=pr
-            type=raw,value=commit-${{ steps.sha.outputs.short }}
+            type=raw,value=pr-${{ github.event.pull_request.number }}-commit-${{ steps.sha.outputs.short }},enable=${{ github.event_name == 'pull_request_target' }}
+            type=raw,value=commit-${{ steps.sha.outputs.short }},enable=${{ github.event_name != 'pull_request_target' }}
             type=raw,value=main,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -146,7 +147,13 @@ jobs:
 
       - name: Export image ref
         id: image-ref
-        run: echo "ref=${{ env.IMAGE_BASE }}-prediction-server${{ inputs.image_suffix }}:commit-${{ steps.sha.outputs.short }}" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ -n "${{ github.event.pull_request.number }}" ]; then
+            TAG="pr-${{ github.event.pull_request.number }}-commit-${{ steps.sha.outputs.short }}"
+          else
+            TAG="commit-${{ steps.sha.outputs.short }}"
+          fi
+          echo "ref=${{ env.IMAGE_BASE }}-prediction-server${{ inputs.image_suffix }}:${TAG}" >> "$GITHUB_OUTPUT"
 
   build-training:
     needs: detect-changes
@@ -185,7 +192,8 @@ jobs:
           images: ${{ env.IMAGE_BASE }}-training-server${{ inputs.image_suffix }}
           tags: |
             type=ref,event=pr
-            type=raw,value=commit-${{ steps.sha.outputs.short }}
+            type=raw,value=pr-${{ github.event.pull_request.number }}-commit-${{ steps.sha.outputs.short }},enable=${{ github.event_name == 'pull_request_target' }}
+            type=raw,value=commit-${{ steps.sha.outputs.short }},enable=${{ github.event_name != 'pull_request_target' }}
             type=raw,value=main,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -206,7 +214,13 @@ jobs:
 
       - name: Export image ref
         id: image-ref
-        run: echo "ref=${{ env.IMAGE_BASE }}-training-server${{ inputs.image_suffix }}:commit-${{ steps.sha.outputs.short }}" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ -n "${{ github.event.pull_request.number }}" ]; then
+            TAG="pr-${{ github.event.pull_request.number }}-commit-${{ steps.sha.outputs.short }}"
+          else
+            TAG="commit-${{ steps.sha.outputs.short }}"
+          fi
+          echo "ref=${{ env.IMAGE_BASE }}-training-server${{ inputs.image_suffix }}:${TAG}" >> "$GITHUB_OUTPUT"
 
   build-test:
     needs: detect-changes
@@ -245,7 +259,8 @@ jobs:
           images: ${{ env.IMAGE_BASE }}-test${{ inputs.image_suffix }}
           tags: |
             type=ref,event=pr
-            type=raw,value=commit-${{ steps.sha.outputs.short }}
+            type=raw,value=pr-${{ github.event.pull_request.number }}-commit-${{ steps.sha.outputs.short }},enable=${{ github.event_name == 'pull_request_target' }}
+            type=raw,value=commit-${{ steps.sha.outputs.short }},enable=${{ github.event_name != 'pull_request_target' }}
             type=raw,value=main,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -266,4 +281,10 @@ jobs:
 
       - name: Export image ref
         id: image-ref
-        run: echo "ref=${{ env.IMAGE_BASE }}-test${{ inputs.image_suffix }}:commit-${{ steps.sha.outputs.short }}" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ -n "${{ github.event.pull_request.number }}" ]; then
+            TAG="pr-${{ github.event.pull_request.number }}-commit-${{ steps.sha.outputs.short }}"
+          else
+            TAG="commit-${{ steps.sha.outputs.short }}"
+          fi
+          echo "ref=${{ env.IMAGE_BASE }}-test${{ inputs.image_suffix }}:${TAG}" >> "$GITHUB_OUTPUT"
