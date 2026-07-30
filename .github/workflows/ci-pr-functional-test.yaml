@@ -155,10 +155,10 @@ jobs:
           mkdir -p /tmp/functional-test-logs
 
           echo "=== Training server logs ===" > /tmp/functional-test-logs/training-server.log
-          kubectl logs -l component=training --tail=500 >> /tmp/functional-test-logs/training-server.log 2>&1 || true
+          kubectl logs -l component=training >> /tmp/functional-test-logs/training-server.log 2>&1 || true
 
           echo "=== Prediction server logs ===" > /tmp/functional-test-logs/prediction-server.log
-          kubectl logs -l component=prediction --all-containers --tail=500 >> /tmp/functional-test-logs/prediction-server.log 2>&1 || true
+          kubectl logs -l component=prediction --all-containers >> /tmp/functional-test-logs/prediction-server.log 2>&1 || true
 
       - name: Collect server debug info on failure
         if: failure() && steps.deploy-servers.outcome != 'skipped'
@@ -187,7 +187,13 @@ jobs:
         if: always() && steps.deploy-tests.outcome != 'skipped'
         run: |
           mkdir -p /tmp/functional-test-logs
-          kubectl logs -l component=functional-test --tail=500 > /tmp/functional-test-logs/functional-test.log 2>&1 || true
+          kubectl logs -l component=functional-test > /tmp/functional-test-logs/functional-test.log 2>&1 || true
+
+      - name: Print test output
+        if: always() && steps.deploy-tests.outcome != 'skipped'
+        run: |
+          echo "=== Functional Test Output ==="
+          cat /tmp/functional-test-logs/functional-test.log || true
 
       - name: Collect test debug info on failure
         if: failure() && steps.deploy-tests.outcome != 'skipped'
