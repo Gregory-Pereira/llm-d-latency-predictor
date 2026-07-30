@@ -143,7 +143,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: ${{ github.event_name != 'pull_request_target' && 'type=gha,mode=min' || '' }}
+          cache-to: type=gha,mode=min,ignore-error=true
 
       - name: Export image ref
         id: image-ref
@@ -210,7 +210,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: ${{ github.event_name != 'pull_request_target' && 'type=gha,mode=min' || '' }}
+          cache-to: type=gha,mode=min,ignore-error=true
 
       - name: Export image ref
         id: image-ref
@@ -277,7 +277,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: ${{ github.event_name != 'pull_request_target' && 'type=gha,mode=min' || '' }}
+          cache-to: type=gha,mode=min,ignore-error=true
 
       - name: Export image ref
         id: image-ref
